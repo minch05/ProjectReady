@@ -26,20 +26,69 @@ Licensed under the [MIT License](LICENSE). Copyright (c) 2026 minch05.
 
 ## Installation and usage
 
-Install into your chosen Python 3.11+ environment when you are ready:
+Prerequisites: Git, an installed Python 3.11+ interpreter with `venv`/pip,
+and network access for installation. The commands below use a POSIX shell
+(macOS/Linux). Check that `python3 --version` is at least 3.11; if it is older,
+use your installed Python 3.11+ executable instead of `python3` when creating
+the virtual environment. Windows activation commands differ and are not covered
+by this walkthrough.
+
+The developer personally verified this workflow on **macOS with Python 3.12.14**
+using fresh environments and the public `v0.1.0` tag. This is developer
+self-validation, not independent external-user validation. Linux, Windows, and
+other Python versions were not tested in that installation check. See
+[the validation record](VALIDATION.md#developer-self-installation-check-2026-10-25).
+
+Download the published tag and create a fresh environment:
+
+```sh
+git clone --branch v0.1.0 --depth 1 https://github.com/minch05/ProjectReady.git
+cd ProjectReady
+python3 --version
+python3 -m venv .venv
+. .venv/bin/activate
+```
+
+Cloning a release tag leaves Git in detached HEAD state; this is expected for
+trying a fixed release. Run the remaining commands from this repository root.
+
+Install into the activated environment:
 
 ```sh
 python -m pip install .
+```
+
+This installation step downloads build dependencies and `packaging` as needed
+and builds/installs ProjectReady. It is separate from running a check: the
+checker itself never installs packages or accesses the network. No global or
+editable install is required.
+
+Run the installed command against the included fake samples:
+
+```sh
+projectready check samples/ready
+projectready check samples/missing-env --json
+projectready check samples/python-mismatch --format json
+```
+
+Expected process exit codes are `0`, `1`, and `2`, respectively. The latter two
+are intentional diagnostics, not installation failures. In a POSIX shell,
+`echo $?` immediately after a command shows its process exit code. Samples must
+be addressed from the repository root, or by their full paths.
+
+To inspect your own project, replace the sample path:
+
+```sh
 projectready check ./your-project
 projectready check ./your-project --json
-projectready check ./your-project --format json
 ```
 
 The installed `projectready` command uses the interpreter chosen at installation.
-For an explicit interpreter, use `python -m projectready`.
+For an explicit interpreter in the activated environment, use `python -m projectready`.
 
-Installation requires setuptools and packaging. The checker itself never installs
-anything. For an existing environment containing packaging, run from source:
+For development without installation, an environment already containing
+`packaging` can run directly from source. This alternative is not needed for
+the installed-command walkthrough above:
 
 ```sh
 PYTHONPATH=src python -m projectready check samples/ready

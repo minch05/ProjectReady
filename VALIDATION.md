@@ -117,3 +117,99 @@ Runtime source, tests, and pyproject.toml match the prior demo-preparation
 baseline. Only release documentation and the license were finalized. The staged
 file list is checked to include exactly the three fake sample .env fixtures;
 real environment files, draft licenses, caches, and private paths are excluded.
+
+
+## Developer self-installation check: 2026-10-25
+
+This was personally performed by the developer on **macOS with Python 3.12.14**
+against the public v0.1.0 GitHub tag. It is not independent external-user
+validation. Two separate temporary checkouts and two fresh Python 3.12.14
+virtual environments were used. Neither installation
+used the development checkout, an editable install, system site-packages, or
+PYTHONPATH. The verified public source commit was
+`c9a60d82efd4ca5264c6b4c8868b027344a7d9ef`.
+
+### Installation commands
+
+The first checkout used the following commands. `<TEMP>` represents its private
+temporary directory, and `<PYTHON_3_12>` represents the already-installed Python
+3.12.14 executable. Only those machine-specific paths are anonymized here.
+
+```sh
+git clone --branch v0.1.0 --depth 1 https://github.com/minch05/ProjectReady.git <TEMP>/ProjectReady
+cd <TEMP>/ProjectReady
+<PYTHON_3_12> -B -m venv <TEMP>/venv
+unset PYTHONPATH PYTHONHOME
+source <TEMP>/venv/bin/activate
+python -m pip install .
+```
+
+The original public README supplied `python -m pip install .` but omitted the
+clone, change-directory, and virtual-environment setup steps. Those prerequisites
+were supplied to carry out this requested check; the original README was not a
+complete first-user walkthrough. Installation itself succeeded without changing
+the published code or adding extra install commands. Pip installed ProjectReady
+0.1.0 and packaging 26.3 and obtained isolated build dependencies. Module location
+was verified inside the fresh environment's site-packages; pip direct_url.json
+identified the temporary public checkout and showed no editable installation.
+
+### Inspection commands and results
+
+After installation, the actual installed `projectready` executable was run from
+the temporary public checkout, not through a source import:
+
+```sh
+projectready check samples/ready
+projectready check samples/ready --json
+projectready check samples/ready --format json
+projectready check samples/missing-env
+projectready check samples/missing-env --json
+projectready check samples/missing-env --format json
+projectready check samples/python-mismatch
+projectready check samples/python-mismatch --json
+projectready check samples/python-mismatch --format json
+```
+
+| Synthetic sample | PASS | WARN | FAIL | SKIP | Exit code in all three modes |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| ready | 5 | 0 | 0 | 0 | 0 |
+| missing-env | 4 | 1 | 0 | 0 | 1 |
+| python-mismatch | 4 | 0 | 1 | 0 | 2 |
+
+Both JSON options produced equal reports, JSON exit_code matched the process
+exit code, terminal check messages matched JSON, and stderr was empty. Sample
+hashes and modification times were unchanged. Fake environment values did not
+appear in diagnostic output. The public checkout's existing unittest suite also
+passed all 29 tests against the installed package with PYTHONPATH unset:
+
+```sh
+python -B -m unittest discover -s tests -v
+```
+
+### Documentation correction and recheck
+
+Only the local development README and this validation record were changed.
+The README now documents cloning the release, entering the repository, verifying
+Python 3.11+, creating/activating a virtual environment, installing, and then
+running the samples. It distinguishes installation downloads from read-only
+checks, expected warning/failure exit codes from installation failures, and the
+installed workflow from the optional source-development workflow. Detached HEAD
+when checking out a tag and POSIX-only activation instructions are explained.
+
+The corrected command sequence was tested using a second new clone of the same
+public tag and a second fresh `.venv`. A pre-existing Python 3.12.14 interpreter
+was selected on PATH before running `python3 --version`, `python3 -m venv .venv`,
+`. .venv/bin/activate`, and `python -m pip install .`. The second installation
+succeeded and all nine installed CLI executions above passed again. Pip reused
+its normal download cache on this second run; no system packages were inherited.
+In total this task completed two installations and 18 sample CLI executions.
+
+The code was not changed. At the end of that installation-validation task, the
+README corrections were local; no commit, push, new tag, or additional publication
+had been performed. This validates one macOS/Python 3.12.14 setup, not Windows/Linux
+or every supported Python version.
+
+The subsequent documentation-only review cross-checked these results against the
+recorded executions and clarified the tested platform in both documents. Only
+README.md and VALIDATION.md are updated on main; the v0.1.0 tag and release are
+unchanged. Functional tests were not rerun for this documentation-only update.
